@@ -3,10 +3,11 @@ name: dbt CI
 on:
   push:
     branches: ["main", "feature/**"]
-    paths:    ["models/**", "tests/**", "dbt_project.yml", "*.yml"]
+    paths:    ["models/**", "tests/**", "dbt_project.yml", "**/*.yml"]
   pull_request:
     branches: ["main"]
-    paths:    ["models/**", "tests/**", "dbt_project.yml"]
+    paths:    ["models/**", "tests/**", "dbt_project.yml", "**/*.yml"]
+  workflow_dispatch:
 
 jobs:
   dbt:
