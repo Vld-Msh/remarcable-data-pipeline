@@ -20,3 +20,4 @@ venv/
 # Secrets / local config
 .env
 *.env
+.user.yml
