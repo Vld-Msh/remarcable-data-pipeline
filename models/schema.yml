@@ -220,6 +220,22 @@ models:
         tests:
           - unique
           - not_null
+      - name: contractor_name
+        description: "Full name of the contractor."
+      - name: region
+        description: "Geographic region of the contractor."
+      - name: plan_type
+        description: "Subscription plan (basic | premium | enterprise)."
+      - name: plan_tier
+        description: "Numeric tier derived from plan_type (1=basic, 2=premium, 3=enterprise)."
+      - name: contractor_created_date
+        description: "Date the contractor account was created."
+      - name: days_on_platform
+        description: "Calendar days since contractor_created_date."
+      - name: activity_status
+        description: "Derived activity label (active | at_risk | churned)."
+      - name: is_at_churn_risk
+        description: "True when the contractor has not placed a completed order in the last 90 days."
       - name: total_orders
         description: "Count of all orders (completed + cancelled + pending)."
       - name: completed_orders
