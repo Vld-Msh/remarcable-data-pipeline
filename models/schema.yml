@@ -129,12 +129,18 @@ models:
               field: contractor_id
       - name: created_at
         description: "Full UTC timestamp of order creation."
+        tests:
+          - not_null
       - name: created_date
         description: "Date of order creation."
       - name: created_month
         description: "Month of order creation; used for time-series aggregations."
       - name: status
         description: "Normalized order status."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['completed', 'cancelled', 'pending']
       - name: is_completed
         description: "Boolean: true when status = completed."
       - name: is_cancelled
@@ -143,6 +149,8 @@ models:
         description: "Boolean: true when status = pending."
       - name: order_total_amount
         description: "Header-level total declared on the order."
+        tests:
+          - not_null
       - name: calculated_total_amount
         description: "Sum of line_amount across all line items for this order."
       - name: amount_variance
@@ -169,8 +177,14 @@ models:
         description: "Business name."
       - name: region
         description: "Geographic region (lowercase)."
+        tests:
+          - accepted_values:
+              values: ['northeast', 'southeast', 'midwest', 'west', 'southwest']
       - name: plan_type
         description: "Subscription plan tier label."
+        tests:
+          - accepted_values:
+              values: ['starter', 'professional', 'enterprise']
       - name: plan_tier
         description: "Numeric plan tier (1=starter, 2=professional, 3=enterprise)."
       - name: contractor_created_date
@@ -191,6 +205,9 @@ models:
         description: "True when days_since_last_order > 60 or never ordered."
       - name: activity_status
         description: "Categorical status: never_ordered | active | at_risk | churned."
+        tests:
+          - accepted_values:
+              values: ['never_ordered', 'active', 'at_risk', 'churned']
 
   - name: mart_contractor_metrics
     description: >
