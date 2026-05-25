@@ -49,7 +49,7 @@ jobs:
         env:
           DBT_DUCKDB_PATH: dev.duckdb
 
-      # Run all tests — uniqueness, not_null, referential integrity, custom
+      # Run all tests - uniqueness, not_null, referential integrity, custom
       - name: dbt test
         run: dbt test --profiles-dir ~/.dbt --target local
         env:

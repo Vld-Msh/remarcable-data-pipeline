@@ -198,7 +198,7 @@ resource "aws_iam_role_policy" "athena" {
 }
 
 # ---------------------------------------------------------------------------
-# SageMaker Role (Bonus — Part 5)
+# SageMaker Role (Bonus - Part 5)
 # ---------------------------------------------------------------------------
 resource "aws_iam_role" "sagemaker" {
   name               = "${var.name_prefix}-sagemaker-role"

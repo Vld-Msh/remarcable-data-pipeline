@@ -1,4 +1,4 @@
-# outputs.tf — exposes key ARNs and endpoints for downstream use
+# outputs.tf - exposes key ARNs and endpoints for downstream use
 
 # ---------------------------------------------------------------------------
 # S3

@@ -2,7 +2,7 @@
 # CloudWatch log groups and alarms for Glue job monitoring.
 # Notifications routed through SNS → email per the assignment spec.
 # Slack routing via AWS Chatbot is described as a future enhancement in the
-# root README — not provisioned here to keep the module self-contained and
+# root README - not provisioned here to keep the module self-contained and
 # reviewable without out-of-band Slack OAuth setup.
 
 # ---------------------------------------------------------------------------
@@ -32,7 +32,7 @@ resource "aws_sns_topic_subscription" "email" {
 }
 
 # ---------------------------------------------------------------------------
-# Metric Filter — detect Glue job failures from CloudWatch logs
+# Metric Filter - detect Glue job failures from CloudWatch logs
 # ---------------------------------------------------------------------------
 resource "aws_cloudwatch_log_metric_filter" "glue_failure" {
   name           = "${var.name_prefix}-glue-job-failure"
@@ -48,7 +48,7 @@ resource "aws_cloudwatch_log_metric_filter" "glue_failure" {
 }
 
 # ---------------------------------------------------------------------------
-# CloudWatch Alarm — fires when ≥1 Glue failure in a 5-minute window
+# CloudWatch Alarm - fires when ≥1 Glue failure in a 5-minute window
 # ---------------------------------------------------------------------------
 resource "aws_cloudwatch_metric_alarm" "glue_job_failure" {
   alarm_name          = "${var.name_prefix}-glue-job-failure"
@@ -73,7 +73,7 @@ resource "aws_cloudwatch_metric_alarm" "glue_job_failure" {
 # ---------------------------------------------------------------------------
 resource "aws_cloudwatch_metric_alarm" "glue_job_duration" {
   alarm_name          = "${var.name_prefix}-glue-job-duration"
-  alarm_description   = "Glue job runtime exceeded 60 minutes — possible runaway job."
+  alarm_description   = "Glue job runtime exceeded 60 minutes - possible runaway job."
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   metric_name         = "glue.driver.aggregate.elapsedTime"

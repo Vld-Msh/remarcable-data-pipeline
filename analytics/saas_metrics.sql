@@ -1,5 +1,5 @@
 -- =============================================================================
--- saas_metrics.sql — Part 4: SaaS Metrics & Analytics
+-- saas_metrics.sql - Part 4: SaaS Metrics & Analytics
 -- =============================================================================
 -- All queries reference mart / fact / dim models in the curated layer.
 -- Dialect: standard SQL compatible with Redshift and Athena (minor variance noted).

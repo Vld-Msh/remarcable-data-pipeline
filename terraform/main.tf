@@ -1,11 +1,11 @@
-# main.tf — root module; wires together all sub-modules
+# main.tf - root module; wires together all sub-modules
 
 locals {
   name_prefix = "${var.project}-${var.environment}"
 }
 
 # ---------------------------------------------------------------------------
-# S3 — three-zone medallion lake (raw / staging / curated)
+# S3 - three-zone medallion lake (raw / staging / curated)
 # ---------------------------------------------------------------------------
 module "s3" {
   source = "./modules/s3"
@@ -16,7 +16,7 @@ module "s3" {
 }
 
 # ---------------------------------------------------------------------------
-# IAM — roles and policies for Glue, Redshift, Athena, (SageMaker bonus)
+# IAM - roles and policies for Glue, Redshift, Athena, (SageMaker bonus)
 # ---------------------------------------------------------------------------
 module "iam" {
   source = "./modules/iam"
@@ -30,7 +30,7 @@ module "iam" {
 }
 
 # ---------------------------------------------------------------------------
-# Glue — crawler + ETL job for raw → staging ingestion
+# Glue - crawler + ETL job for raw → staging ingestion
 # ---------------------------------------------------------------------------
 module "glue" {
   source = "./modules/glue"
@@ -48,7 +48,7 @@ module "glue" {
 }
 
 # ---------------------------------------------------------------------------
-# Redshift Serverless — curated layer query engine
+# Redshift Serverless - curated layer query engine
 # ---------------------------------------------------------------------------
 module "redshift" {
   source = "./modules/redshift"
@@ -64,7 +64,7 @@ module "redshift" {
 }
 
 # ---------------------------------------------------------------------------
-# Athena — ad-hoc query layer over raw + staging
+# Athena - ad-hoc query layer over raw + staging
 # ---------------------------------------------------------------------------
 module "athena" {
   source = "./modules/athena"
@@ -74,7 +74,7 @@ module "athena" {
 }
 
 # ---------------------------------------------------------------------------
-# CloudWatch — log groups and Glue failure alarm
+# CloudWatch - log groups and Glue failure alarm
 # ---------------------------------------------------------------------------
 module "cloudwatch" {
   source = "./modules/cloudwatch"

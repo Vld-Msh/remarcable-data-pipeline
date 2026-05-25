@@ -2,20 +2,20 @@
 # Glue Data Catalog database, crawler (raw zone), and ETL job (raw → staging).
 
 # ---------------------------------------------------------------------------
-# Glue Data Catalog — one database per zone for namespace isolation
+# Glue Data Catalog - one database per zone for namespace isolation
 # ---------------------------------------------------------------------------
 resource "aws_glue_catalog_database" "raw" {
   name        = "${var.name_prefix}_raw"
-  description = "Glue Data Catalog for the raw zone — auto-populated by crawler."
+  description = "Glue Data Catalog for the raw zone - auto-populated by crawler."
 }
 
 resource "aws_glue_catalog_database" "staging" {
   name        = "${var.name_prefix}_staging"
-  description = "Glue Data Catalog for the staging zone — populated by ETL job."
+  description = "Glue Data Catalog for the staging zone - populated by ETL job."
 }
 
 # ---------------------------------------------------------------------------
-# Glue Crawler — catalogs raw CSV data from S3
+# Glue Crawler - catalogs raw CSV data from S3
 # ---------------------------------------------------------------------------
 resource "aws_glue_crawler" "raw" {
   name          = "${var.name_prefix}-raw-crawler"
@@ -50,7 +50,7 @@ resource "aws_glue_crawler" "raw" {
 }
 
 # ---------------------------------------------------------------------------
-# Glue ETL Job — raw (CSV) → staging (Parquet + type casts)
+# Glue ETL Job - raw (CSV) → staging (Parquet + type casts)
 # ---------------------------------------------------------------------------
 resource "aws_glue_job" "raw_to_staging" {
   name        = "${var.name_prefix}-raw-to-staging"
@@ -76,7 +76,7 @@ resource "aws_glue_job" "raw_to_staging" {
     "--spark-event-logs-path"            = "s3://${var.glue_scripts_bucket}/spark-logs/"
     "--TempDir"                          = "s3://${var.glue_scripts_bucket}/tmp/"
     "--continuous-log-logGroup"          = var.log_group_name
-    # Environment routing — the script derives all resource names from this single arg.
+    # Environment routing - the script derives all resource names from this single arg.
     # Terraform passes var.environment ('dev' or 'prod') set in terraform.tfvars.
     "--ENV" = var.environment
   }
@@ -91,12 +91,12 @@ resource "aws_glue_job" "raw_to_staging" {
 }
 
 # ---------------------------------------------------------------------------
-# Glue Trigger — daily scheduled run after crawler completes
+# Glue Trigger - daily scheduled run after crawler completes
 # ---------------------------------------------------------------------------
 resource "aws_glue_trigger" "daily_etl" {
   name     = "${var.name_prefix}-daily-etl-trigger"
   type     = "SCHEDULED"
-  schedule = "cron(30 6 * * ? *)" # 06:30 UTC — 30 min after crawler
+  schedule = "cron(30 6 * * ? *)" # 06:30 UTC - 30 min after crawler
 
   actions {
     job_name = aws_glue_job.raw_to_staging.name

@@ -1,6 +1,6 @@
 # Remarcable Data Engineering Assignment
 
-A production-representative data pipeline covering medallion data modeling, AWS Lakehouse infrastructure, data quality, and SaaS analytics — built for the Remarcable data engineering take-home.
+A production-representative data pipeline covering medallion data modeling, AWS Lakehouse infrastructure, data quality, and SaaS analytics - built for the Remarcable data engineering take-home.
 
 ---
 
@@ -12,13 +12,13 @@ additions that I would ship in a real environment. The split is documented
 explicitly so the required work can be evaluated separately from the
 extensions:
 
-- **Required deliverables** — see Parts 1–5 sections below. Each section
+- **Required deliverables** - see Parts 1–5 sections below. Each section
   starts with the spec checklist.
-- **Production extensions** — listed at the end of each Part (e.g. incremental
+- **Production extensions** - listed at the end of each Part (e.g. incremental
   materialization for `fct_orders`, S3 lifecycle rules, runaway-job alarm,
   CI workflows). Rationale for every addition is in
   [`ASSUMPTIONS.md`](ASSUMPTIONS.md).
-- **Out of scope** — VPC provisioning, real-time CDC, dbt orchestration
+- **Out of scope** - VPC provisioning, real-time CDC, dbt orchestration
   layer. See `ASSUMPTIONS.md` § 6.
 
 All non-obvious decisions (MRR proxy, reference date, retention cohort
@@ -59,7 +59,7 @@ remarcable_project/
 │   └── saas_metrics.sql         # Part 4: MRR, regional AOV, retention, lapsed contractors
 ├── terraform/
 │   ├── backend.tf               # remote state (S3 + DynamoDB)
-│   ├── main.tf                  # root module — wires sub-modules
+│   ├── main.tf                  # root module - wires sub-modules
 │   ├── variables.tf
 │   ├── outputs.tf
 │   ├── terraform.tfvars
@@ -79,7 +79,7 @@ remarcable_project/
 
 ---
 
-## Part 1 — Data Modeling
+## Part 1 - Data Modeling
 
 ### Medallion Architecture
 
@@ -105,9 +105,9 @@ stg_orders       stg_contractors      stg_order_items
 
 ### Key Design Decisions
 
-- **stg_* models are views** — they always reflect the freshest raw data without materializing cost.
-- **fct_orders is incremental** on `order_id` — avoids full table scans as data grows.
-- **dim_contractors is SCD Type 1** — for this dataset, overwriting is acceptable. If plan upgrades need history, add a `valid_from / valid_to` pattern (SCD Type 2).
+- **stg_* models are views** - they always reflect the freshest raw data without materializing cost.
+- **fct_orders is incremental** on `order_id` - avoids full table scans as data grows.
+- **dim_contractors is SCD Type 1** - for this dataset, overwriting is acceptable. If plan upgrades need history, add a `valid_from / valid_to` pattern (SCD Type 2).
 - **amount_variance column** in `fct_orders` deliberately exposes the delta between the order header and computed line-item sum, making data quality issues visible without blocking queries.
 
 ### Running dbt
@@ -130,7 +130,7 @@ dbt docs generate && dbt docs serve
 
 ---
 
-## Part 2 — AWS Lakehouse Infrastructure (Terraform)
+## Part 2 - AWS Lakehouse Infrastructure (Terraform)
 
 ### Architecture
 
@@ -178,7 +178,7 @@ terraform apply tfplan
 | Module       | Resources |
 |--------------|-----------|
 | `s3`         | 5 buckets (raw, staging, curated, athena-results, glue-scripts) with versioning, SSE-S3, public-access block, lifecycle rules |
-| `iam`        | 4 roles: Glue, Redshift, Athena, SageMaker — all least-privilege |
+| `iam`        | 4 roles: Glue, Redshift, Athena, SageMaker - all least-privilege |
 | `glue`       | Glue Data Catalog (2 databases), crawler, ETL job, scheduled trigger |
 | `redshift`   | Serverless namespace + workgroup, `require_ssl=true`, activity logging |
 | `athena`     | Workgroup with encrypted results, 10 GB scan cap, 2 saved named queries |
@@ -186,7 +186,7 @@ terraform apply tfplan
 
 ---
 
-## Part 3 — Data Quality
+## Part 3 - Data Quality
 
 Tests are in `tests/test_fct_orders.sql` (singular SQL tests) and `tests/dbt_tests_schema.yml` (generic dbt tests). Each test returns 0 rows on pass.
 
@@ -209,7 +209,7 @@ Tests are in `tests/test_fct_orders.sql` (singular SQL tests) and `tests/dbt_tes
 
 ---
 
-## Part 4 — SaaS Metrics
+## Part 4 - SaaS Metrics
 
 All queries are in `analytics/saas_metrics.sql`.
 
@@ -222,7 +222,7 @@ All queries are in `analytics/saas_metrics.sql`.
 
 ---
 
-## Part 5 (Bonus) — AI/ML Readiness
+## Part 5 (Bonus) - AI/ML Readiness
 
 ### Feature Store Design (`bonus/feature_store.sql`)
 
@@ -253,7 +253,7 @@ Terraform resources: `bonus/sagemaker_terraform.tf` provisions the S3 artifact b
 
 Every non-obvious design decision is documented in **[`ASSUMPTIONS.md`](ASSUMPTIONS.md)**, organized by part. Highlights:
 
-- **MRR** is a procurement-spend proxy — the dataset has no subscription
+- **MRR** is a procurement-spend proxy - the dataset has no subscription
   table. The query shape would not change in a real SaaS environment, only
   the revenue source.
 - **Reference date** is anchored to `2024-06-30` (end of dataset) so the
@@ -261,7 +261,7 @@ Every non-obvious design decision is documented in **[`ASSUMPTIONS.md`](ASSUMPTI
   provided sample data.
 - **Cancelled orders** are excluded from revenue and retention metrics,
   preserved in the fact table for cancellation-rate analysis.
-- **`fct_orders` is incremental** on `order_id` — full refresh on every dbt
+- **`fct_orders` is incremental** on `order_id` - full refresh on every dbt
   run does not scale.
 - **Terraform not applied** to a live account per the submission
   instructions; CI runs `terraform validate` and `terraform plan` against
@@ -274,19 +274,19 @@ Every non-obvious design decision is documented in **[`ASSUMPTIONS.md`](ASSUMPTI
 Production-grade improvements that would be the next iteration but were kept
 out of this submission to stay within the time envelope:
 
-- **Slack alerting via AWS Chatbot** — route the SNS alerts topic to a
+- **Slack alerting via AWS Chatbot** - route the SNS alerts topic to a
   `#data-alerts` channel using `aws_chatbot_slack_channel_configuration`.
   Requires a one-time manual OAuth flow in the AWS Console for Slack
   workspace authorization, which is why it is documented here rather than
-  provisioned. The SNS topic is already the integration point — adding
+  provisioned. The SNS topic is already the integration point - adding
   Slack is a single subscription resource.
-- **Secrets Manager for Redshift credentials** — replace the
+- **Secrets Manager for Redshift credentials** - replace the
   `TF_VAR_redshift_admin_password` flow with `aws_secretsmanager_secret`
   + rotation.
-- **Airflow / Step Functions orchestration** — current setup uses Glue
+- **Airflow / Step Functions orchestration** - current setup uses Glue
   scheduled triggers. A workflow engine becomes valuable once there are
   cross-system dependencies (e.g. wait for an external SFTP drop before
   triggering the crawler).
-- **PII / column-level access control** — Lake Formation tag-based access
+- **PII / column-level access control** - Lake Formation tag-based access
   control on the staging Glue databases.
 

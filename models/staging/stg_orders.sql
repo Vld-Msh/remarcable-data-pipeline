@@ -18,15 +18,15 @@ cleaned as (
         -- foreign key
         trim(contractor_id)                                 as contractor_id,
 
-        -- timestamps — cast to UTC timestamp; reject unparseable rows via coalesce sentinel
+        -- timestamps - cast to UTC timestamp; reject unparseable rows via coalesce sentinel
         cast(created_at as timestamp)                       as created_at,
         date_trunc('day',  cast(created_at as timestamp))  as created_date,
         date_trunc('month', cast(created_at as timestamp)) as created_month,
 
-        -- status — lowercase + strip whitespace for consistent downstream filtering
+        -- status - lowercase + strip whitespace for consistent downstream filtering
         lower(trim(status))                                 as status,
 
-        -- financials — cast to numeric; guard against negative values from upstream
+        -- financials - cast to numeric; guard against negative values from upstream
         cast(total_amount as numeric(18, 2))                as total_amount,
 
         -- boolean convenience flags

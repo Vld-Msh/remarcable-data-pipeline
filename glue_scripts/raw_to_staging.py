@@ -1,5 +1,5 @@
 """
-raw_to_staging.py — AWS Glue ETL job
+raw_to_staging.py - AWS Glue ETL job
 Reads raw CSV files from S3 (catalogued by Glue crawler), applies cleaning /
 type casting, and writes Parquet-partitioned output to the staging zone.
 
@@ -8,7 +8,7 @@ Deploy: upload this script to s3://<glue-scripts-bucket>/scripts/raw_to_staging.
 Environment routing:
   Pass --ENV dev  → reads remarcable-dev-raw,  writes remarcable-dev-staging
   Pass --ENV prod → reads remarcable-prod-raw, writes remarcable-prod-staging
-  Defaults to 'dev' if omitted (safe default — never accidentally write to prod).
+  Defaults to 'dev' if omitted (safe default - never accidentally write to prod).
 """
 
 import sys
@@ -28,11 +28,11 @@ from pyspark.sql.types import (
 # ---------------------------------------------------------------------------
 args = getResolvedOptions(sys.argv, [
     "JOB_NAME",
-    "ENV",           # 'dev' or 'prod' — injected by Terraform default_arguments
+    "ENV",           # 'dev' or 'prod' - injected by Terraform default_arguments
 ])
 
 # ---------------------------------------------------------------------------
-# Environment config — mirrors the naming convention used across DE repos.
+# Environment config - mirrors the naming convention used across DE repos.
 # All resource names are derived from this single dict; no scattered if/elif.
 # ---------------------------------------------------------------------------
 VALID_ENVS = ("dev", "prod")

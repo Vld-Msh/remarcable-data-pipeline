@@ -2,7 +2,7 @@
 -- Dimension table for contractors.
 -- Enriches staging data with first/last order dates pulled from fct_orders
 -- so consumers have a single denormalized lookup for all contractor attributes.
--- Grain: one row per contractor_id (SCD Type 1 — overwrites on refresh).
+-- Grain: one row per contractor_id (SCD Type 1 - overwrites on refresh).
 
 with contractors as (
 

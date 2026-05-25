@@ -13,7 +13,7 @@ with orders as (
 order_item_totals as (
 
     -- Roll up line items to order level so fct_orders carries both the header amount
-    -- and the sum-of-lines amount — the delta surfaces data quality issues.
+    -- and the sum-of-lines amount - the delta surfaces data quality issues.
     select
         order_id,
         count(*)            as line_item_count,

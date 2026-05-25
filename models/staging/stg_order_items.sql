@@ -19,7 +19,7 @@ cleaned as (
         trim(order_id)                                          as order_id,
         trim(product_id)                                        as product_id,
 
-        -- measures — cast to appropriate numeric types
+        -- measures - cast to appropriate numeric types
         cast(quantity   as integer)                             as quantity,
         cast(unit_price as numeric(18, 2))                      as unit_price,
 

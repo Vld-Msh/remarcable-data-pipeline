@@ -8,7 +8,7 @@
 
 WITH fct AS (SELECT * FROM {{ ref('fct_orders') }})
 
--- CHECK 1: Header total vs. line-item sum — tolerance $0.01
+-- CHECK 1: Header total vs. line-item sum - tolerance $0.01
 -- Expected to fire on sample data; surfaced as has_amount_discrepancy in fct_orders.
 SELECT order_id AS failing_key, 'amount_discrepancy' AS test_name
 FROM   fct
@@ -17,7 +17,7 @@ WHERE  is_completed = true
 
 UNION ALL
 
--- CHECK 2: Volume spike — contractor order count > 3× trailing 3-month average
+-- CHECK 2: Volume spike - contractor order count > 3× trailing 3-month average
 -- (see ASSUMPTIONS.md §3.1 for threshold rationale)
 SELECT contractor_id, 'volume_spike'
 FROM (

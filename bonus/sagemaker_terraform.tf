@@ -47,7 +47,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "sagemaker" {
 }
 
 # ---------------------------------------------------------------------------
-# SageMaker Feature Group — contractor_churn_features
+# SageMaker Feature Group - contractor_churn_features
 # Backed by the curated S3 bucket (offline store) and DynamoDB (online store).
 # ---------------------------------------------------------------------------
 resource "aws_sagemaker_feature_group" "contractor_churn" {
@@ -69,7 +69,7 @@ resource "aws_sagemaker_feature_group" "contractor_churn" {
     enable_online_store = true
   }
 
-  # Feature definitions — must match feature_store.sql schema
+  # Feature definitions - must match feature_store.sql schema
   feature_definition { feature_name = "record_id";                    feature_type = "String" }
   feature_definition { feature_name = "event_time";                   feature_type = "String" }
   feature_definition { feature_name = "plan_type";                    feature_type = "String" }

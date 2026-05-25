@@ -156,7 +156,7 @@ models:
 
   - name: dim_contractors
     description: >
-      Dimension table for contractor accounts (SCD Type 1 — overwrites on refresh).
+      Dimension table for contractor accounts (SCD Type 1 - overwrites on refresh).
       Enriched with first/last order dates, lifetime spend, and churn-risk
       indicators derived from fct_orders.  Grain: one row per contractor_id.
     columns:

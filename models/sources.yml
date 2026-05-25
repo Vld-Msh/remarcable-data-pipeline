@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    description: "Raw zone — CSV files landed in S3 and catalogued by AWS Glue."
+    description: "Raw zone - CSV files landed in S3 and catalogued by AWS Glue."
     database: "{{ env_var('DBT_RAW_DATABASE', 'dev') }}"
     schema: "{{ env_var('DBT_RAW_SCHEMA', 'raw') }}"
     loader: glue_csv

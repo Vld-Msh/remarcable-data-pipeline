@@ -15,7 +15,7 @@ cleaned as (
         -- primary key
         trim(contractor_id)                                     as contractor_id,
 
-        -- attributes — strip whitespace, normalize case
+        -- attributes - strip whitespace, normalize case
         trim(name)                                              as contractor_name,
         lower(trim(region))                                     as region,
         lower(trim(plan_type))                                  as plan_type,

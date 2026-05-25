@@ -13,7 +13,7 @@ intent from code.
 | Layer | Materialization | Reasoning |
 |---|---|---|
 | `stg_*` | `view` | Always reflects freshest raw data; no storage cost; staging is cheap to recompute. |
-| `dim_contractors` | `table` | Small (≤ 10k rows expected), referenced by every dashboard — table beats view on read latency. |
+| `dim_contractors` | `table` | Small (≤ 10k rows expected), referenced by every dashboard - table beats view on read latency. |
 | `fct_orders` | `incremental` | Grows linearly with order volume; full refresh on every dbt run wastes compute as data scales. Incremental key: `order_id`. |
 | `mart_contractor_metrics` | `table` | Aggregation table consumed by BI; recomputed once per dbt run. |
 
@@ -22,7 +22,7 @@ intent from code.
 Implemented as **SCD Type 1** (overwrite). A contractor moving from `basic` to
 `premium` updates the row in place. If retroactive plan-attribution becomes
 required (e.g. "what was the contractor's plan when this order was placed?"),
-upgrade to SCD Type 2 with `valid_from` / `valid_to` / `is_current` columns —
+upgrade to SCD Type 2 with `valid_from` / `valid_to` / `is_current` columns -
 the rest of the model graph would not change.
 
 ### 1.3 `amount_variance` exposed in `fct_orders`
@@ -46,7 +46,7 @@ In a real environment with a `subscriptions` table, MRR would be:
 ```sql
 SUM(monthly_contract_value) WHERE subscription_status = 'active'
 ```
-The query shape stays identical — only the revenue source changes.
+The query shape stays identical - only the revenue source changes.
 
 ### 2.2 Reference date for "last 30 days"
 
@@ -60,7 +60,7 @@ for production use.
 
 Excluded from all revenue, AOV, and retention metrics. Retained in
 `fct_orders` with `is_cancelled = true` so cancellation-rate analyses still
-work. Mart-layer metrics never silently swallow cancelled rows — the exclusion
+work. Mart-layer metrics never silently swallow cancelled rows - the exclusion
 is always explicit in the `WHERE` clause.
 
 ### 2.4 Retention cohort definition
@@ -70,7 +70,7 @@ A contractor's **cohort month** is the month of their first completed order
 places their first order in March is in the March cohort. Rationale: procurement
 churn correlates with order behavior, not account creation.
 
-Retention windows are inclusive on both ends — "30-day retention" means at
+Retention windows are inclusive on both ends - "30-day retention" means at
 least one completed order in the 30 days following the cohort start, including
 day 0.
 
@@ -83,7 +83,7 @@ day 0.
 Volume-spike detection flags a contractor whose current-week order count
 exceeds **3× the trailing 12-week average**, with a minimum baseline of 2
 orders/week to avoid noise on low-volume accounts. Configured as a **warning**,
-not an error — pipelines do not block on this signal. The 3× factor is a
+not an error - pipelines do not block on this signal. The 3× factor is a
 starting point; in production it should be tuned per-region or per-plan after
 observing false-positive rates.
 
@@ -110,15 +110,15 @@ systems that store unit prices at 4 decimal places but totals at 2.
 
 The assignment requires `raw`, `staging`, and `curated`. Two extra buckets are
 provisioned:
-- `athena-results` — Athena requires a dedicated output location; mixing it
+- `athena-results` - Athena requires a dedicated output location; mixing it
   into one of the data buckets pollutes the layer with query artifacts.
-- `glue-scripts` — keeps deployable code separate from data so the data
+- `glue-scripts` - keeps deployable code separate from data so the data
   bucket policy can stay strict (read-only for Glue, etc.).
 
 ### 4.2 Alerting
 
 CloudWatch alarms publish to a single SNS topic that fans out to email today.
-**Slack via AWS Chatbot is intentionally not provisioned** — it requires a
+**Slack via AWS Chatbot is intentionally not provisioned** - it requires a
 one-time manual OAuth flow in the AWS Console and a Slack workspace ID that a
 reviewer cannot fill in. The SNS topic is the integration point: adding Slack,
 PagerDuty, or Opsgenie later is a single subscription resource.
@@ -135,7 +135,7 @@ resources before `terraform apply` succeeds. The placeholders allow
 `redshift_admin_password` is marked `sensitive = true` and is **never**
 written to `terraform.tfvars`. It is supplied via `TF_VAR_redshift_admin_password`
 environment variable for this exercise. In production it would live in AWS
-Secrets Manager with rotation enabled and be fetched via `data` source — that
+Secrets Manager with rotation enabled and be fetched via `data` source - that
 swap is local to one module.
 
 ### 4.5 Glue job bookmark
@@ -151,7 +151,7 @@ Workgroup configured with a 10 GB per-query scan limit. Stops one bad
 
 ---
 
-## 5. Bonus — ML / Feature Store (Part 5)
+## 5. Bonus - ML / Feature Store (Part 5)
 
 ### 5.1 Churn label definition
 
@@ -181,14 +181,14 @@ prevent leakage of future order activity into the feature set.
 The following were considered and deliberately omitted to stay within the
 assignment's time envelope:
 
-- **VPC / networking provisioning** — assumes a pre-existing VPC.
-- **dbt Cloud / Airflow orchestration** — Glue triggers + cron are sufficient
+- **VPC / networking provisioning** - assumes a pre-existing VPC.
+- **dbt Cloud / Airflow orchestration** - Glue triggers + cron are sufficient
   for the assignment; production orchestration would layer Airflow or
   Step Functions on top.
-- **Real-time CDC ingestion** — the source is daily CSV drops; CDC would
+- **Real-time CDC ingestion** - the source is daily CSV drops; CDC would
   require a different ingest path (DMS, Kinesis).
-- **Cross-region replication** — single region only.
-- **Cost estimate** — at expected volumes (~10k orders/month), the dominant
+- **Cross-region replication** - single region only.
+- **Cost estimate** - at expected volumes (~10k orders/month), the dominant
   cost line is Redshift Serverless base capacity ($0.36/RPU-hour × 8 RPU when
   active). All other services are well within the AWS free tier for this
   workload.

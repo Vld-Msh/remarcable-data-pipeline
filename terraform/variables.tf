@@ -1,4 +1,4 @@
-# variables.tf — all configurable values; set real values in terraform.tfvars
+# variables.tf - all configurable values; set real values in terraform.tfvars
 
 variable "aws_region" {
   description = "AWS region for all resources."

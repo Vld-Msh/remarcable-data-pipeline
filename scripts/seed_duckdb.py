@@ -1,5 +1,5 @@
 """
-seed_duckdb.py — loads the raw CSV files into DuckDB so dbt sources resolve.
+seed_duckdb.py - loads the raw CSV files into DuckDB so dbt sources resolve.
 Run before `dbt run` in local/CI environments.
 
 Usage:
@@ -34,7 +34,7 @@ def seed(db_path: str, csv_dir: Path):
         print(f"  Loaded raw.{table}: {count} rows from {filename}")
 
     con.close()
-    print(f"\nDone — DuckDB seeded at {db_path}")
+    print(f"\nDone - DuckDB seeded at {db_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

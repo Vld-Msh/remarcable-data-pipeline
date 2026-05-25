@@ -39,7 +39,7 @@ jobs:
       - name: terraform validate
         run: terraform validate
 
-      # Plan with dummy values for sensitive vars — shows the full plan in the PR
+      # Plan with dummy values for sensitive vars - shows the full plan in the PR
       # without needing real AWS credentials. Uses -detailed-exitcode:
       #   0 = no changes, 1 = error, 2 = changes present (all are acceptable in CI)
       - name: terraform plan (dry-run)

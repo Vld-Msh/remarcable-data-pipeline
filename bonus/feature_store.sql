@@ -1,5 +1,5 @@
 -- =============================================================================
--- feature_store.sql — Part 5: AI/ML Readiness
+-- feature_store.sql - Part 5: AI/ML Readiness
 -- Churn prediction feature store for AWS SageMaker
 -- =============================================================================
 --
@@ -228,6 +228,6 @@ LEFT JOIN regularity        reg ON s.contractor_id = reg.contractor_id
 --    PutRecord API called after each order is placed / status changes).
 -- 3. Point-in-time correctness: training joins use
 --    "latest feature row where event_time <= label_date" to prevent leakage.
--- 4. Schema evolution: additive columns only — SageMaker Feature Store does not
+-- 4. Schema evolution: additive columns only - SageMaker Feature Store does not
 --    support column deletion. Deprecated columns are null-filled.
 -- =============================================================================
