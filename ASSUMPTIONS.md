@@ -70,9 +70,10 @@ A contractor's **cohort month** is the month of their first completed order
 places their first order in March is in the March cohort. Rationale: procurement
 churn correlates with order behavior, not account creation.
 
-Retention windows are inclusive on both ends - "30-day retention" means at
-least one completed order in the 30 days following the cohort start, including
-day 0.
+Retention tracks subsequent completed orders starting from day 1 after the
+cohort event. "30-day retention" means at least one completed order in days
+1-30 following the first order. The first order itself is the cohort event
+and is not double-counted as a retained order.
 
 ---
 

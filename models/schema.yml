@@ -221,7 +221,7 @@ models:
           - unique
           - not_null
       - name: total_orders
-        description: "Count of all non-cancelled orders."
+        description: "Count of all orders (completed + cancelled + pending)."
       - name: completed_orders
         description: "Count of completed orders."
       - name: cancelled_orders
@@ -239,8 +239,8 @@ models:
       - name: max_order_amount
         description: "Largest completed order amount."
       - name: first_order_date
-        description: "Date of first non-cancelled order."
+        description: "Date of first order (any status)."
       - name: last_order_date
-        description: "Date of most recent non-cancelled order."
+        description: "Date of most recent order (any status)."
       - name: days_since_last_order
         description: "Days since last completed order."
