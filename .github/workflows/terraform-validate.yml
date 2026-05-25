@@ -3,10 +3,11 @@ name: Terraform Validate
 on:
   push:
     branches: ["main", "feature/**"]
-    paths:    ["terraform/**"]
+    paths:    ["terraform/**", ".github/workflows/terraform-validate.yml"]
   pull_request:
     branches: ["main"]
     paths:    ["terraform/**"]
+  workflow_dispatch:
 
 jobs:
   validate:
