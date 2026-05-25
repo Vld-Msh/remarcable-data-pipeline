@@ -2,7 +2,7 @@
 -- Fact table for purchase orders.
 -- Joins orders with aggregated line-item totals and enriches with contractor dimension key.
 -- Grain: one row per order_id.
--- Only includes non-cancelled orders by default; use the is_cancelled flag to include them.
+-- Includes all orders; use is_completed / is_cancelled flags to filter per metric.
 
 with orders as (
 

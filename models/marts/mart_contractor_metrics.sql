@@ -4,7 +4,7 @@
 -- Grain: one row per contractor_id.
 --
 -- Metric definitions:
---   total_orders        : count of all non-cancelled orders
+--   total_orders        : count of all orders (completed + cancelled + pending)
 --   total_spend         : sum of order_total_amount for completed orders
 --   avg_order_value     : total_spend / total_orders (completed orders only)
 --   order_frequency_days: avg calendar days between successive completed orders
@@ -19,7 +19,7 @@ with contractors as (
 orders as (
 
     select * from {{ ref('fct_orders') }}
-    where is_cancelled = false   -- exclude cancelled from all metrics
+    -- all orders included; CASE WHEN filters handle per-metric inclusion
 
 ),
 
