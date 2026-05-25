@@ -30,7 +30,7 @@ jobs:
 
       - name: Seed DuckDB + run dbt models
         run: |
-          python scripts/seed_duckdb.py --db dev.duckdb --csv-dir .
+          python scripts/seed_duckdb.py --db dev.duckdb --csv-dir seeds/
           mkdir -p ~/.dbt && cp profiles.yml ~/.dbt/profiles.yml
           dbt run --profiles-dir ~/.dbt --target local
         env:

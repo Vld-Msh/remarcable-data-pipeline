@@ -27,7 +27,7 @@ jobs:
 
       # Seed raw CSV data into DuckDB so dbt sources resolve
       - name: Seed DuckDB from CSVs
-        run: python scripts/seed_duckdb.py --db dev.duckdb --csv-dir .
+        run: python scripts/seed_duckdb.py --db dev.duckdb --csv-dir seeds/
         env:
           DBT_DUCKDB_PATH: dev.duckdb
 
