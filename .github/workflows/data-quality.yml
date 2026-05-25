@@ -1,0 +1,91 @@
+name: Data Quality Checks
+
+on:
+  # Run after dbt CI passes on main
+  workflow_run:
+    workflows: ["dbt CI"]
+    branches:  ["main"]
+    types:     [completed]
+  # Also allow manual trigger for ad-hoc quality checks
+  workflow_dispatch:
+
+jobs:
+  quality:
+    name: Run DQ checks
+    runs-on: ubuntu-latest
+    # Only run if the triggering workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Seed DuckDB + run dbt models
+        run: |
+          python scripts/seed_duckdb.py --db dev.duckdb --csv-dir .
+          mkdir -p ~/.dbt && cp profiles.yml ~/.dbt/profiles.yml
+          dbt run --profiles-dir ~/.dbt --target local
+        env:
+          DBT_DUCKDB_PATH: dev.duckdb
+
+      # Run the singular data quality tests from tests/test_fct_orders.sql
+      # dbt test covers generic tests; this step re-runs all tests and outputs
+      # a structured report for the PR / Actions summary.
+      - name: dbt test with JUnit output
+        run: |
+          dbt test \
+            --profiles-dir ~/.dbt \
+            --target local \
+            --store-failures \
+            --no-fail-fast
+        env:
+          DBT_DUCKDB_PATH: dev.duckdb
+
+      # Write a human-readable summary to the Actions job summary page
+      - name: Write test summary
+        if: always()
+        run: |
+          echo "## Data Quality Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python - <<'EOF'
+          import json, glob, os
+
+          summary_file = os.environ.get("GITHUB_STEP_SUMMARY", "/dev/stdout")
+          results_files = glob.glob("target/run_results.json")
+
+          if not results_files:
+              print("No run_results.json found")
+              exit(0)
+
+          with open(results_files[0]) as f:
+              results = json.load(f)
+
+          passed = sum(1 for r in results["results"] if r["status"] == "pass")
+          failed = sum(1 for r in results["results"] if r["status"] == "fail")
+          total  = len(results["results"])
+
+          lines = [
+              f"| Metric | Value |",
+              f"|--------|-------|",
+              f"| Total tests | {total} |",
+              f"| ✅ Passed   | {passed} |",
+              f"| ❌ Failed   | {failed} |",
+          ]
+
+          if failed:
+              lines.append("\n### Failed tests")
+              for r in results["results"]:
+                  if r["status"] == "fail":
+                      lines.append(f"- `{r['unique_id']}`")
+
+          with open(summary_file, "a") as f:
+              f.write("\n".join(lines) + "\n")
+          EOF

@@ -1,0 +1,72 @@
+name: Terraform Validate
+
+on:
+  push:
+    branches: ["main", "feature/**"]
+    paths:    ["terraform/**"]
+  pull_request:
+    branches: ["main"]
+    paths:    ["terraform/**"]
+
+jobs:
+  validate:
+    name: fmt + validate + plan
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.7"
+
+      # Fail fast if any file is not formatted
+      - name: terraform fmt
+        run: terraform fmt -check -recursive
+
+      # Init with a local backend override so no real AWS state bucket is needed in CI
+      - name: terraform init (local backend)
+        run: |
+          terraform init \
+            -backend=false \
+            -input=false
+
+      - name: terraform validate
+        run: terraform validate
+
+      # Plan with dummy values for sensitive vars — shows the full plan in the PR
+      # without needing real AWS credentials. Uses -detailed-exitcode:
+      #   0 = no changes, 1 = error, 2 = changes present (all are acceptable in CI)
+      - name: terraform plan (dry-run)
+        env:
+          TF_VAR_redshift_admin_password: "DummyPass1!"
+          TF_VAR_environment:             "dev"
+        run: |
+          terraform plan \
+            -var-file="terraform.tfvars" \
+            -var="redshift_admin_password=$TF_VAR_redshift_admin_password" \
+            -var="redshift_vpc_subnet_ids=[\"subnet-00000000\"]" \
+            -var="redshift_vpc_security_group_ids=[\"sg-00000000\"]" \
+            -input=false \
+            -no-color \
+            -detailed-exitcode || [ $? -eq 2 ]
+
+      # Post plan output as a PR comment
+      - name: Comment plan on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `#### Terraform Plan
+            \`terraform plan\` completed successfully. Review changes before merging.`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });

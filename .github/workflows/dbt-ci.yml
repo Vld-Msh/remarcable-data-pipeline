@@ -1,0 +1,79 @@
+name: dbt CI
+
+on:
+  push:
+    branches: ["main", "feature/**"]
+    paths:    ["models/**", "tests/**", "dbt_project.yml", "*.yml"]
+  pull_request:
+    branches: ["main"]
+    paths:    ["models/**", "tests/**", "dbt_project.yml"]
+
+jobs:
+  dbt:
+    name: compile + test (DuckDB)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Seed raw CSV data into DuckDB so dbt sources resolve
+      - name: Seed DuckDB from CSVs
+        run: python scripts/seed_duckdb.py --db dev.duckdb --csv-dir .
+        env:
+          DBT_DUCKDB_PATH: dev.duckdb
+
+      # Copy profiles.yml to the location dbt expects
+      - name: Set up dbt profile
+        run: |
+          mkdir -p ~/.dbt
+          cp profiles.yml ~/.dbt/profiles.yml
+
+      # Compile verifies Jinja rendering + SQL syntax without executing
+      - name: dbt compile
+        run: dbt compile --profiles-dir ~/.dbt --target local
+        env:
+          DBT_DUCKDB_PATH: dev.duckdb
+
+      # Run all models against DuckDB
+      - name: dbt run
+        run: dbt run --profiles-dir ~/.dbt --target local
+        env:
+          DBT_DUCKDB_PATH: dev.duckdb
+
+      # Run all tests — uniqueness, not_null, referential integrity, custom
+      - name: dbt test
+        run: dbt test --profiles-dir ~/.dbt --target local
+        env:
+          DBT_DUCKDB_PATH: dev.duckdb
+
+      # Generate docs and upload as artifact (downloadable from Actions run page)
+      - name: dbt docs generate
+        run: dbt docs generate --profiles-dir ~/.dbt --target local
+        env:
+          DBT_DUCKDB_PATH: dev.duckdb
+
+      - name: Upload dbt docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-docs
+          path: target/
+          retention-days: 7
+
+      # SQL linting via sqlfluff
+      - name: sqlfluff lint
+        run: |
+          sqlfluff lint models/ \
+            --dialect duckdb \
+            --templater dbt \
+            --exclude-rules ST06,ST07 \
+            --warn-unused-ignores
+        continue-on-error: true   # lint warnings don't block the build

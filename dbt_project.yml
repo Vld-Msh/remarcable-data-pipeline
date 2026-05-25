@@ -1,0 +1,35 @@
+name: remarcable
+version: "1.0.0"
+config-version: 2
+
+profile: remarcable
+
+model-paths:   ["models"]
+test-paths:    ["tests"]
+seed-paths:    ["seeds"]
+macro-paths:   ["macros"]
+
+target-path:   "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  remarcable:
+    staging:
+      +schema:      staging
+      +materialized: view          # staging = cheap, always-fresh views
+
+    marts:
+      +schema:      marts
+      +materialized: table         # marts = pre-computed, BI-ready tables
+      fct_orders:
+        +materialized: incremental  # large fact table: only process new rows
+        +unique_key:  order_id
+      dim_contractors:
+        +materialized: table
+      mart_contractor_metrics:
+        +materialized: table
+
+vars:
+  # Override in CI or per-environment runs
+  dbt_date_spine_start: "2024-01-01"
+  dbt_date_spine_end:   "2024-12-31"

@@ -1,0 +1,278 @@
+version: 2
+
+# ---------------------------------------------------------------------------
+# Sources
+# ---------------------------------------------------------------------------
+sources:
+  - name: raw
+    description: "Raw CSV data landed in the S3 raw zone and catalogued by Glue."
+    tables:
+      - name: orders
+        description: "Purchase orders submitted by contractors."
+        columns:
+          - name: order_id
+            description: "Unique identifier for the order (e.g. O001)."
+          - name: contractor_id
+            description: "FK to contractors table."
+          - name: created_at
+            description: "UTC timestamp when the order was created."
+          - name: status
+            description: "Order status: completed | cancelled | pending."
+          - name: total_amount
+            description: "Header-level total amount declared on the order."
+
+      - name: contractors
+        description: "Contractor accounts registered on the platform."
+        columns:
+          - name: contractor_id
+            description: "Unique identifier for the contractor (e.g. C001)."
+          - name: name
+            description: "Business name of the contractor."
+          - name: region
+            description: "Geographic region: Northeast | Southeast | Midwest | West | Southwest."
+          - name: plan_type
+            description: "Subscription plan: starter | professional | enterprise."
+          - name: created_at
+            description: "Date the contractor account was created."
+
+      - name: order_items
+        description: "Line items belonging to each order."
+        columns:
+          - name: item_id
+            description: "Unique identifier for the line item (e.g. I001)."
+          - name: order_id
+            description: "FK to orders table."
+          - name: product_id
+            description: "FK to products catalogue (not in scope for this dataset)."
+          - name: quantity
+            description: "Number of units ordered."
+          - name: unit_price
+            description: "Price per unit at time of order."
+
+# ---------------------------------------------------------------------------
+# Staging models
+# ---------------------------------------------------------------------------
+models:
+  - name: stg_orders
+    description: >
+      Cleaned and typed orders. Applies lowercase status normalization,
+      timestamp casting, and filters out rows without a primary key or with
+      negative amounts. Adds boolean convenience flags per status.
+    columns:
+      - name: order_id
+        description: "Trimmed primary key."
+        tests:
+          - unique
+          - not_null
+      - name: contractor_id
+        description: "Trimmed FK; guaranteed non-null after staging filter."
+        tests:
+          - not_null
+      - name: created_at
+        description: "UTC timestamp cast from source string."
+        tests:
+          - not_null
+      - name: created_date
+        description: "Date portion of created_at (day truncated)."
+      - name: created_month
+        description: "Month truncated timestamp; used for MRR / monthly aggregations."
+      - name: status
+        description: "Lowercased, whitespace-stripped status value."
+        tests:
+          - accepted_values:
+              values: ['completed', 'cancelled', 'pending']
+      - name: total_amount
+        description: "Header-level total amount cast to numeric(18,2)."
+        tests:
+          - not_null
+      - name: is_completed
+        description: "True when status = 'completed'."
+      - name: is_cancelled
+        description: "True when status = 'cancelled'."
+      - name: is_pending
+        description: "True when status = 'pending'."
+
+  - name: stg_contractors
+    description: >
+      Cleaned contractor records. Normalizes region and plan_type to lowercase,
+      adds days_on_platform tenure metric, and assigns a numeric plan_tier for
+      easy ordering (1=starter, 2=professional, 3=enterprise).
+    columns:
+      - name: contractor_id
+        description: "Trimmed primary key."
+        tests:
+          - unique
+          - not_null
+      - name: contractor_name
+        description: "Business name, whitespace stripped."
+        tests:
+          - not_null
+      - name: region
+        description: "Lowercased geographic region."
+        tests:
+          - accepted_values:
+              values: ['northeast', 'southeast', 'midwest', 'west', 'southwest']
+      - name: plan_type
+        description: "Lowercased subscription plan."
+        tests:
+          - accepted_values:
+              values: ['starter', 'professional', 'enterprise']
+      - name: created_date
+        description: "Date the contractor account was created."
+        tests:
+          - not_null
+      - name: days_on_platform
+        description: "Calendar days since account creation (relative to current_date at run time)."
+      - name: plan_tier
+        description: "Numeric encoding of plan (1=starter, 2=professional, 3=enterprise)."
+
+  - name: stg_order_items
+    description: >
+      Cleaned order line items. Casts quantity and unit_price to numeric types,
+      derives line_amount = quantity * unit_price, and filters out zero-value rows.
+    columns:
+      - name: item_id
+        description: "Trimmed primary key."
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        description: "FK to stg_orders."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+      - name: product_id
+        description: "FK to products catalogue."
+        tests:
+          - not_null
+      - name: quantity
+        description: "Integer quantity, guaranteed > 0."
+      - name: unit_price
+        description: "Numeric unit price, guaranteed > 0."
+      - name: line_amount
+        description: "Derived: quantity * unit_price."
+
+# ---------------------------------------------------------------------------
+# Mart models
+# ---------------------------------------------------------------------------
+  - name: fct_orders
+    description: >
+      Fact table for purchase orders. Joins staged orders to rolled-up line-item
+      totals and exposes both the header amount (order_total_amount) and the
+      computed amount (calculated_total_amount) alongside a variance flag to
+      surface data quality issues.  Grain: one row per order_id.
+    columns:
+      - name: order_id
+        description: "Primary key."
+        tests:
+          - unique
+          - not_null
+      - name: contractor_id
+        description: "FK to dim_contractors."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_contractors')
+              field: contractor_id
+      - name: created_at
+        description: "Full UTC timestamp of order creation."
+      - name: created_date
+        description: "Date of order creation."
+      - name: created_month
+        description: "Month of order creation; used for time-series aggregations."
+      - name: status
+        description: "Normalized order status."
+      - name: is_completed
+        description: "Boolean: true when status = completed."
+      - name: is_cancelled
+        description: "Boolean: true when status = cancelled."
+      - name: is_pending
+        description: "Boolean: true when status = pending."
+      - name: order_total_amount
+        description: "Header-level total declared on the order."
+      - name: calculated_total_amount
+        description: "Sum of line_amount across all line items for this order."
+      - name: amount_variance
+        description: "order_total_amount minus calculated_total_amount."
+      - name: has_amount_discrepancy
+        description: "True when |amount_variance| > $0.01."
+      - name: line_item_count
+        description: "Number of line items associated with the order."
+      - name: total_units
+        description: "Sum of quantities across all line items."
+
+  - name: dim_contractors
+    description: >
+      Dimension table for contractor accounts (SCD Type 1 — overwrites on refresh).
+      Enriched with first/last order dates, lifetime spend, and churn-risk
+      indicators derived from fct_orders.  Grain: one row per contractor_id.
+    columns:
+      - name: contractor_id
+        description: "Primary key."
+        tests:
+          - unique
+          - not_null
+      - name: contractor_name
+        description: "Business name."
+      - name: region
+        description: "Geographic region (lowercase)."
+      - name: plan_type
+        description: "Subscription plan tier label."
+      - name: plan_tier
+        description: "Numeric plan tier (1=starter, 2=professional, 3=enterprise)."
+      - name: contractor_created_date
+        description: "Date the contractor account was created."
+      - name: days_on_platform
+        description: "Tenure in days."
+      - name: first_order_date
+        description: "Date of the contractor's first completed order."
+      - name: last_order_date
+        description: "Date of the contractor's most recent completed order."
+      - name: lifetime_order_count
+        description: "Total number of completed orders."
+      - name: lifetime_spend
+        description: "Sum of order_total_amount for all completed orders."
+      - name: days_since_last_order
+        description: "Calendar days between last completed order and today."
+      - name: is_at_churn_risk
+        description: "True when days_since_last_order > 60 or never ordered."
+      - name: activity_status
+        description: "Categorical status: never_ordered | active | at_risk | churned."
+
+  - name: mart_contractor_metrics
+    description: >
+      Wide reporting table for BI / executive dashboards. Combines dim_contractors
+      attributes with order-level aggregations including total spend, AOV, order
+      frequency, and cancellation rate.  Grain: one row per contractor_id.
+    columns:
+      - name: contractor_id
+        description: "Primary key."
+        tests:
+          - unique
+          - not_null
+      - name: total_orders
+        description: "Count of all non-cancelled orders."
+      - name: completed_orders
+        description: "Count of completed orders."
+      - name: cancelled_orders
+        description: "Count of cancelled orders."
+      - name: total_spend
+        description: "Sum of order_total_amount for completed orders."
+      - name: avg_order_value
+        description: "total_spend / completed_orders; null when zero orders."
+      - name: avg_days_between_orders
+        description: "Average calendar days between successive completed orders."
+      - name: cancellation_rate_pct
+        description: "Percentage of orders that were cancelled."
+      - name: min_order_amount
+        description: "Smallest completed order amount."
+      - name: max_order_amount
+        description: "Largest completed order amount."
+      - name: first_order_date
+        description: "Date of first non-cancelled order."
+      - name: last_order_date
+        description: "Date of most recent non-cancelled order."
+      - name: days_since_last_order
+        description: "Days since last completed order."

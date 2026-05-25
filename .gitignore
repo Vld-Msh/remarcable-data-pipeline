@@ -1,0 +1,22 @@
+# dbt
+target/
+dbt_packages/
+logs/
+*.duckdb
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+.terraform.lock.hcl
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets / local config
+.env
+*.env

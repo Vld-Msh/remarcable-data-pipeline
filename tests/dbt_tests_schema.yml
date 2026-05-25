@@ -1,0 +1,86 @@
+version: 2
+
+# =============================================================================
+# dbt native test definitions for fct_orders, dim_contractors, stg_order_items
+# These run automatically with `dbt test` and complement the singular tests in
+# tests/test_fct_orders.sql.
+# =============================================================================
+
+models:
+  - name: fct_orders
+    tests:
+      # -----------------------------------------------------------------------
+      # Primary key integrity
+      # -----------------------------------------------------------------------
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [order_id]
+      - not_null:
+          column_name: order_id
+      - not_null:
+          column_name: contractor_id
+      - not_null:
+          column_name: created_at
+      - not_null:
+          column_name: status
+      - not_null:
+          column_name: order_total_amount
+
+      # -----------------------------------------------------------------------
+      # Referential integrity
+      # -----------------------------------------------------------------------
+      - relationships:
+          column_name: contractor_id
+          to: ref('dim_contractors')
+          field: contractor_id
+
+      # -----------------------------------------------------------------------
+      # Business logic
+      # -----------------------------------------------------------------------
+      - accepted_values:
+          column_name: status
+          values: ['completed', 'cancelled', 'pending']
+
+      # Custom test: amount cannot be negative
+      - expression_is_true:
+          expression: "order_total_amount >= 0"
+          name: fct_orders_non_negative_amount
+
+      # Custom test: line-item sum matches header for completed orders
+      - expression_is_true:
+          expression: "NOT (is_completed AND ABS(amount_variance) > 0.01)"
+          name: fct_orders_amount_matches_line_items
+
+  - name: stg_order_items
+    tests:
+      - not_null:
+          column_name: item_id
+      - unique:
+          column_name: item_id
+      - not_null:
+          column_name: order_id
+      - relationships:
+          column_name: order_id
+          to: ref('stg_orders')
+          field: order_id
+      - expression_is_true:
+          expression: "quantity > 0"
+          name: stg_order_items_positive_quantity
+      - expression_is_true:
+          expression: "unit_price > 0"
+          name: stg_order_items_positive_price
+
+  - name: dim_contractors
+    tests:
+      - not_null:
+          column_name: contractor_id
+      - unique:
+          column_name: contractor_id
+      - accepted_values:
+          column_name: plan_type
+          values: ['starter', 'professional', 'enterprise']
+      - accepted_values:
+          column_name: region
+          values: ['northeast', 'southeast', 'midwest', 'west', 'southwest']
+      - accepted_values:
+          column_name: activity_status
+          values: ['never_ordered', 'active', 'at_risk', 'churned']

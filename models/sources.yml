@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw zone — CSV files landed in S3 and catalogued by AWS Glue."
+    database: "{{ env_var('DBT_RAW_DATABASE', 'remarcable_raw') }}"
+    schema: "{{ env_var('DBT_RAW_SCHEMA', 'public') }}"
+    loader: glue_csv
+    loaded_at_field: _glue_loaded_at   # populated by Glue ETL job metadata column
+    freshness:
+      warn_after:  {count: 24, period: hour}
+      error_after: {count: 48, period: hour}
+    tables:
+      - name: orders
+        identifier: orders
+      - name: contractors
+        identifier: contractors
+      - name: order_items
+        identifier: order_items

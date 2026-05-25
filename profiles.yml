@@ -1,0 +1,42 @@
+# profiles.yml — dbt connection profiles
+# Place this file at ~/.dbt/profiles.yml for local use, or leave here for CI.
+#
+# Two profiles:
+#   local   — DuckDB, reads CSVs directly. Zero infrastructure, zero cost.
+#   redshift — Redshift Serverless. Used in staging/prod after Terraform apply.
+
+remarcable:
+
+  # -------------------------------------------------------------------------
+  # LOCAL / CI profile — DuckDB (no AWS, no credentials, completely free)
+  # Run with: dbt run --profile remarcable --target local
+  # -------------------------------------------------------------------------
+  target: local
+
+  outputs:
+
+    local:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', 'dev.duckdb') }}"
+      # Seed the raw tables from the CSV files so dbt sources resolve correctly
+      extensions:
+        - httpfs
+      settings:
+        threads: 4
+
+    # -------------------------------------------------------------------------
+    # REDSHIFT profile — used post-Terraform in real environments
+    # Credentials supplied via environment variables (never hardcoded).
+    # Run with: dbt run --profile remarcable --target redshift
+    # -------------------------------------------------------------------------
+    redshift:
+      type: redshift
+      method: iam
+      cluster_id: "{{ env_var('REDSHIFT_WORKGROUP') }}"
+      host:     "{{ env_var('REDSHIFT_HOST') }}"
+      port:     5439
+      dbname:   remarcable
+      schema:   marts
+      user:     "{{ env_var('REDSHIFT_USER') }}"
+      password: "{{ env_var('REDSHIFT_PASSWORD') }}"
+      threads:  4

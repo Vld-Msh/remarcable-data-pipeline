@@ -1,0 +1,10 @@
+output "raw_bucket_name"           { value = aws_s3_bucket.raw.bucket }
+output "raw_bucket_arn"            { value = aws_s3_bucket.raw.arn }
+output "staging_bucket_name"       { value = aws_s3_bucket.staging.bucket }
+output "staging_bucket_arn"        { value = aws_s3_bucket.staging.arn }
+output "curated_bucket_name"       { value = aws_s3_bucket.curated.bucket }
+output "curated_bucket_arn"        { value = aws_s3_bucket.curated.arn }
+output "athena_results_bucket_name" { value = aws_s3_bucket.athena_results.bucket }
+output "athena_results_bucket_arn"  { value = aws_s3_bucket.athena_results.arn }
+output "glue_scripts_bucket_name"  { value = aws_s3_bucket.glue_scripts.bucket }
+output "glue_scripts_bucket_arn"   { value = aws_s3_bucket.glue_scripts.arn }
