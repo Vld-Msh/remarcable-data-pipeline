@@ -16,7 +16,7 @@ resource "aws_athena_workgroup" "main" {
     }
 
     # Cost control: warn at 1 GB, fail at 10 GB per query
-    bytes_scanned_cutoff_per_query     = 10737418240   # 10 GB
+    bytes_scanned_cutoff_per_query     = 10737418240 # 10 GB
     enforce_workgroup_configuration    = true
     publish_cloudwatch_metrics_enabled = true
   }
@@ -28,11 +28,11 @@ resource "aws_athena_workgroup" "main" {
 # Glue catalog is used automatically by Athena; no extra wiring needed.
 # Named queries provide saved, reusable SQL for common exploration patterns.
 resource "aws_athena_named_query" "sample_orders" {
-  name      = "sample-recent-orders"
-  workgroup = aws_athena_workgroup.main.id
-  database  = "${var.name_prefix}_raw"
+  name        = "sample-recent-orders"
+  workgroup   = aws_athena_workgroup.main.id
+  database    = "${var.name_prefix}_raw"
   description = "Quick sample of the 100 most recent raw orders."
-  query     = <<-SQL
+  query       = <<-SQL
     SELECT *
     FROM   orders
     ORDER  BY created_at DESC
@@ -41,11 +41,11 @@ resource "aws_athena_named_query" "sample_orders" {
 }
 
 resource "aws_athena_named_query" "contractor_spend" {
-  name      = "contractor-spend-summary"
-  workgroup = aws_athena_workgroup.main.id
-  database  = "${var.name_prefix}_raw"
+  name        = "contractor-spend-summary"
+  workgroup   = aws_athena_workgroup.main.id
+  database    = "${var.name_prefix}_raw"
   description = "Total completed spend per contractor from the raw zone."
-  query     = <<-SQL
+  query       = <<-SQL
     SELECT
         contractor_id,
         count(*)          AS order_count,

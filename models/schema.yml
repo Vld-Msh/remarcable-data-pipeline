@@ -1,55 +1,6 @@
 version: 2
 
 # ---------------------------------------------------------------------------
-# Sources
-# ---------------------------------------------------------------------------
-sources:
-  - name: raw
-    description: "Raw CSV data landed in the S3 raw zone and catalogued by Glue."
-    tables:
-      - name: orders
-        description: "Purchase orders submitted by contractors."
-        columns:
-          - name: order_id
-            description: "Unique identifier for the order (e.g. O001)."
-          - name: contractor_id
-            description: "FK to contractors table."
-          - name: created_at
-            description: "UTC timestamp when the order was created."
-          - name: status
-            description: "Order status: completed | cancelled | pending."
-          - name: total_amount
-            description: "Header-level total amount declared on the order."
-
-      - name: contractors
-        description: "Contractor accounts registered on the platform."
-        columns:
-          - name: contractor_id
-            description: "Unique identifier for the contractor (e.g. C001)."
-          - name: name
-            description: "Business name of the contractor."
-          - name: region
-            description: "Geographic region: Northeast | Southeast | Midwest | West | Southwest."
-          - name: plan_type
-            description: "Subscription plan: starter | professional | enterprise."
-          - name: created_at
-            description: "Date the contractor account was created."
-
-      - name: order_items
-        description: "Line items belonging to each order."
-        columns:
-          - name: item_id
-            description: "Unique identifier for the line item (e.g. I001)."
-          - name: order_id
-            description: "FK to orders table."
-          - name: product_id
-            description: "FK to products catalogue (not in scope for this dataset)."
-          - name: quantity
-            description: "Number of units ordered."
-          - name: unit_price
-            description: "Price per unit at time of order."
-
-# ---------------------------------------------------------------------------
 # Staging models
 # ---------------------------------------------------------------------------
 models:

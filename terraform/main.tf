@@ -10,9 +10,9 @@ locals {
 module "s3" {
   source = "./modules/s3"
 
-  name_prefix      = local.name_prefix
-  environment      = var.environment
-  force_destroy    = var.s3_force_destroy
+  name_prefix   = local.name_prefix
+  environment   = var.environment
+  force_destroy = var.s3_force_destroy
 }
 
 # ---------------------------------------------------------------------------
@@ -21,12 +21,12 @@ module "s3" {
 module "iam" {
   source = "./modules/iam"
 
-  name_prefix             = local.name_prefix
-  raw_bucket_arn          = module.s3.raw_bucket_arn
-  staging_bucket_arn      = module.s3.staging_bucket_arn
-  curated_bucket_arn      = module.s3.curated_bucket_arn
+  name_prefix               = local.name_prefix
+  raw_bucket_arn            = module.s3.raw_bucket_arn
+  staging_bucket_arn        = module.s3.staging_bucket_arn
+  curated_bucket_arn        = module.s3.curated_bucket_arn
   athena_results_bucket_arn = module.s3.athena_results_bucket_arn
-  glue_scripts_bucket_arn = module.s3.glue_scripts_bucket_arn
+  glue_scripts_bucket_arn   = module.s3.glue_scripts_bucket_arn
 }
 
 # ---------------------------------------------------------------------------
@@ -35,16 +35,16 @@ module "iam" {
 module "glue" {
   source = "./modules/glue"
 
-  name_prefix          = local.name_prefix
-  environment          = var.environment
-  glue_role_arn        = module.iam.glue_role_arn
-  raw_bucket_name      = module.s3.raw_bucket_name
-  staging_bucket_name  = module.s3.staging_bucket_name
-  glue_scripts_bucket  = module.s3.glue_scripts_bucket_name
-  worker_type          = var.glue_job_worker_type
-  num_workers          = var.glue_job_num_workers
-  crawler_schedule     = var.glue_crawler_schedule
-  log_group_name       = module.cloudwatch.glue_log_group_name
+  name_prefix         = local.name_prefix
+  environment         = var.environment
+  glue_role_arn       = module.iam.glue_role_arn
+  raw_bucket_name     = module.s3.raw_bucket_name
+  staging_bucket_name = module.s3.staging_bucket_name
+  glue_scripts_bucket = module.s3.glue_scripts_bucket_name
+  worker_type         = var.glue_job_worker_type
+  num_workers         = var.glue_job_num_workers
+  crawler_schedule    = var.glue_crawler_schedule
+  log_group_name      = module.cloudwatch.glue_log_group_name
 }
 
 # ---------------------------------------------------------------------------
@@ -69,8 +69,8 @@ module "redshift" {
 module "athena" {
   source = "./modules/athena"
 
-  name_prefix              = local.name_prefix
-  athena_results_bucket    = module.s3.athena_results_bucket_name
+  name_prefix           = local.name_prefix
+  athena_results_bucket = module.s3.athena_results_bucket_name
 }
 
 # ---------------------------------------------------------------------------

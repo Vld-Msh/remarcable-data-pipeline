@@ -78,7 +78,7 @@ resource "aws_glue_job" "raw_to_staging" {
     "--continuous-log-logGroup"          = var.log_group_name
     # Environment routing — the script derives all resource names from this single arg.
     # Terraform passes var.environment ('dev' or 'prod') set in terraform.tfvars.
-    "--ENV"                              = var.environment
+    "--ENV" = var.environment
   }
 
   execution_property {
@@ -96,7 +96,7 @@ resource "aws_glue_job" "raw_to_staging" {
 resource "aws_glue_trigger" "daily_etl" {
   name     = "${var.name_prefix}-daily-etl-trigger"
   type     = "SCHEDULED"
-  schedule = "cron(30 6 * * ? *)"   # 06:30 UTC — 30 min after crawler
+  schedule = "cron(30 6 * * ? *)" # 06:30 UTC — 30 min after crawler
 
   actions {
     job_name = aws_glue_job.raw_to_staging.name

@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "athena_assume" {
   statement {
     actions = ["sts:AssumeRole"]
     principals {
-      type        = "Service"
+      type = "Service"
       # Athena queries are executed in the caller's identity context;
       # this role is used by EC2/Lambda/ECS services that query on behalf of users.
       identifiers = ["lambda.amazonaws.com", "ec2.amazonaws.com"]
@@ -120,7 +120,7 @@ data "aws_iam_policy_document" "redshift_s3" {
     ]
   }
   statement {
-    sid     = "GlueDataCatalogRead"
+    sid = "GlueDataCatalogRead"
     actions = [
       "glue:GetDatabase",
       "glue:GetDatabases",
@@ -129,7 +129,7 @@ data "aws_iam_policy_document" "redshift_s3" {
       "glue:GetPartition",
       "glue:GetPartitions",
     ]
-    resources = ["*"]   # Glue Data Catalog does not support resource-level ARNs for GetTable
+    resources = ["*"] # Glue Data Catalog does not support resource-level ARNs for GetTable
   }
 }
 
@@ -149,7 +149,7 @@ resource "aws_iam_role" "athena" {
 
 data "aws_iam_policy_document" "athena_policy" {
   statement {
-    sid     = "AthenaWorkgroupAccess"
+    sid = "AthenaWorkgroupAccess"
     actions = [
       "athena:StartQueryExecution",
       "athena:GetQueryExecution",
@@ -178,7 +178,7 @@ data "aws_iam_policy_document" "athena_policy" {
     ]
   }
   statement {
-    sid     = "GlueCatalogRead"
+    sid = "GlueCatalogRead"
     actions = [
       "glue:GetDatabase",
       "glue:GetDatabases",
@@ -206,7 +206,7 @@ resource "aws_iam_role" "sagemaker" {
 }
 
 resource "aws_iam_role_policy_attachment" "sagemaker_full" {
-  role       = aws_iam_role.sagemaker.name
+  role = aws_iam_role.sagemaker.name
   # Scoped-down in production; AmazonSageMakerFullAccess is used here for dev convenience.
   # In prod, replace with a custom policy granting only required SageMaker actions.
   policy_arn = "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
@@ -214,7 +214,7 @@ resource "aws_iam_role_policy_attachment" "sagemaker_full" {
 
 data "aws_iam_policy_document" "sagemaker_s3" {
   statement {
-    sid = "ReadFeatureStore"
+    sid     = "ReadFeatureStore"
     actions = ["s3:GetObject", "s3:ListBucket"]
     resources = [
       var.curated_bucket_arn,

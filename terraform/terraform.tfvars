@@ -9,7 +9,7 @@ project     = "remarcable"
 owner       = "data-engineering"
 
 # S3
-s3_force_destroy = true   # safe to destroy in dev; set false in prod
+s3_force_destroy = true # safe to destroy in dev; set false in prod
 
 # Glue
 glue_job_worker_type  = "G.1X"
@@ -22,8 +22,8 @@ redshift_admin_username = "admin"
 # redshift_admin_password — set via TF_VAR_redshift_admin_password env var
 
 # Networking — replace with actual VPC resource IDs before applying
-redshift_vpc_subnet_ids          = ["subnet-xxxxxxxx", "subnet-yyyyyyyy"]
-redshift_vpc_security_group_ids  = ["sg-xxxxxxxx"]
+redshift_vpc_subnet_ids         = ["subnet-xxxxxxxx", "subnet-yyyyyyyy"]
+redshift_vpc_security_group_ids = ["sg-xxxxxxxx"]
 
 # Alerting — email
 alarm_email        = "data-alerts@remarcable.com"

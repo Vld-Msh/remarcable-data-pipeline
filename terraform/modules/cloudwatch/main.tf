@@ -78,7 +78,7 @@ resource "aws_cloudwatch_metric_alarm" "glue_job_duration" {
   evaluation_periods  = 1
   metric_name         = "glue.driver.aggregate.elapsedTime"
   namespace           = "Glue"
-  period              = 3600    # 1 hour
+  period              = 3600 # 1 hour
   statistic           = "Maximum"
   threshold           = 3600000 # 60 min in ms
   treat_missing_data  = "notBreaching"

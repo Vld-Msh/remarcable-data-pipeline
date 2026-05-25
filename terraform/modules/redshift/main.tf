@@ -17,7 +17,7 @@ resource "aws_redshiftserverless_workgroup" "main" {
   namespace_name = aws_redshiftserverless_namespace.main.namespace_name
   workgroup_name = "${var.name_prefix}-wg"
 
-  base_capacity      = var.base_capacity
+  base_capacity       = var.base_capacity
   publicly_accessible = false
 
   subnet_ids         = var.subnet_ids
@@ -42,10 +42,10 @@ resource "aws_redshiftserverless_resource_policy" "curated_s3" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "AllowRedshiftS3Access"
-        Effect = "Allow"
+        Sid       = "AllowRedshiftS3Access"
+        Effect    = "Allow"
         Principal = { Service = "redshift.amazonaws.com" }
-        Action = ["s3:GetObject", "s3:ListBucket"]
+        Action    = ["s3:GetObject", "s3:ListBucket"]
         Resource = [
           var.curated_bucket_arn,
           "${var.curated_bucket_arn}/*"

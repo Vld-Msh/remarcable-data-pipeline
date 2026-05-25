@@ -3,8 +3,8 @@ version: 2
 sources:
   - name: raw
     description: "Raw zone — CSV files landed in S3 and catalogued by AWS Glue."
-    database: "{{ env_var('DBT_RAW_DATABASE', 'remarcable_raw') }}"
-    schema: "{{ env_var('DBT_RAW_SCHEMA', 'public') }}"
+    database: "{{ env_var('DBT_RAW_DATABASE', 'dev') }}"
+    schema: "{{ env_var('DBT_RAW_SCHEMA', 'raw') }}"
     loader: glue_csv
     loaded_at_field: _glue_loaded_at   # populated by Glue ETL job metadata column
     freshness:

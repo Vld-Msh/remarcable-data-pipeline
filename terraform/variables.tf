@@ -54,7 +54,7 @@ variable "glue_job_num_workers" {
 variable "glue_crawler_schedule" {
   description = "Cron schedule for the Glue crawler (UTC). Empty string = no schedule (manual trigger)."
   type        = string
-  default     = "cron(0 6 * * ? *)"   # 06:00 UTC daily
+  default     = "cron(0 6 * * ? *)" # 06:00 UTC daily
 }
 
 # ---------------------------------------------------------------------------
