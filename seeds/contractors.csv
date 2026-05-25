@@ -1,0 +1,21 @@
+contractor_id,name,region,plan_type,created_at
+C001,Bright Spark Electric,Northeast,professional,2023-01-15
+C002,Volt Masters Inc,Southeast,starter,2023-02-20
+C003,PowerGrid Solutions,Midwest,enterprise,2022-11-05
+C004,Elite Wiring Co,West,professional,2023-03-10
+C005,Current Force Electric,Southwest,starter,2023-04-18
+C006,Apex Electrical Services,Northeast,enterprise,2022-09-22
+C007,BlueLine Contractors,Midwest,professional,2023-05-30
+C008,Titan Electric Group,West,starter,2023-01-08
+C009,Summit Power Systems,Southeast,enterprise,2022-12-14
+C010,Redline Electrical,Southwest,professional,2023-06-25
+C011,NorthStar Electric,Northeast,starter,2023-07-11
+C012,Cornerstone Wiring,Midwest,enterprise,2022-10-30
+C013,Pacific Grid Co,West,professional,2023-02-05
+C014,Southern Volt Services,Southeast,starter,2023-08-19
+C015,Ironclad Electric,Southwest,enterprise,2023-03-27
+C016,Delta Power Group,Northeast,professional,2022-08-15
+C017,Crestview Electrical,Midwest,starter,2023-09-03
+C018,Horizon Wiring Solutions,West,enterprise,2023-04-22
+C019,Trident Electric Co,Southeast,professional,2023-10-07
+C020,Cascade Power Systems,Southwest,starter,2022-07-18
