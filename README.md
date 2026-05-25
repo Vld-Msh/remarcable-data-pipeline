@@ -4,6 +4,12 @@ A production-representative data pipeline covering medallion data modeling, AWS 
 
 ---
 
+## Pipeline Architecture
+
+![ETL Pipeline Diagram](assets/pipeline_diagram.svg)
+
+---
+
 ## Project Structure
 
 ```
