@@ -1,0 +1,13 @@
+# ---------------------------------------------------------------------------
+# GitHub Linguist overrides
+# ---------------------------------------------------------------------------
+
+# Force SQL detection - Jinja2 templating in dbt models can confuse Linguist
+*.sql linguist-language=SQL
+*.sql linguist-detectable=true
+
+# SVG diagram is generated from assets/pipeline_diagram.mmd
+assets/pipeline_diagram.svg linguist-generated=true
+
+# Seeds are data files, not code
+seeds/*.csv linguist-documentation=true
