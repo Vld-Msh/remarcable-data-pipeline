@@ -102,13 +102,3 @@ variable "log_retention_days" {
   type        = number
   default     = 90
 }
-
-variable "slack_workspace_id" {
-  description = "Slack workspace ID for AWS Chatbot integration. Find it in AWS Chatbot console after OAuth authorization."
-  type        = string
-}
-
-variable "slack_channel_id" {
-  description = "Slack channel ID where Glue failure alerts are posted (right-click channel in Slack → Copy Link to get the ID)."
-  type        = string
-}

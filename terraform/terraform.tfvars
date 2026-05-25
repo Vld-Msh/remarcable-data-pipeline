@@ -28,9 +28,3 @@ redshift_vpc_security_group_ids  = ["sg-xxxxxxxx"]
 # Alerting — email
 alarm_email        = "data-alerts@remarcable.com"
 log_retention_days = 90
-
-# Alerting — Slack (AWS Chatbot)
-# slack_workspace_id: find in AWS Console → Chatbot after completing the one-time OAuth flow
-# slack_channel_id:   right-click a channel in Slack → "Copy link" → last segment of URL
-slack_workspace_id = "T00000000"    # replace with your workspace ID
-slack_channel_id   = "C00000000"    # replace with your #data-alerts channel ID

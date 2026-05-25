@@ -98,7 +98,7 @@ output "glue_failure_alarm_arn" {
   value       = module.cloudwatch.glue_failure_alarm_arn
 }
 
-output "slack_chatbot_arn" {
-  description = "ARN of the AWS Chatbot Slack channel configuration."
-  value       = module.cloudwatch.chatbot_configuration_arn
+output "alerts_sns_topic_arn" {
+  description = "SNS topic ARN that broadcasts pipeline alerts (email today; extendable to Slack/PagerDuty)."
+  value       = module.cloudwatch.alerts_sns_topic_arn
 }

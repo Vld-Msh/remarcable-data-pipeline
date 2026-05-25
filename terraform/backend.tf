@@ -29,12 +29,6 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.50"
     }
-    # awscc is required for aws_chatbot_slack_channel_configuration, which the
-    # standard aws provider does not yet fully support.
-    awscc = {
-      source  = "hashicorp/awscc"
-      version = "~> 1.0"
-    }
   }
 
   required_version = ">= 1.7.0"
@@ -51,9 +45,4 @@ provider "aws" {
       ManagedBy   = "terraform"
     }
   }
-}
-
-# awscc provider mirrors the same region; no extra auth needed when AWS CLI is configured.
-provider "awscc" {
-  region = var.aws_region
 }

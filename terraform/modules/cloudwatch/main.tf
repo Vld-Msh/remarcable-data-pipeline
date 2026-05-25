@@ -1,5 +1,9 @@
 # modules/cloudwatch/main.tf
 # CloudWatch log groups and alarms for Glue job monitoring.
+# Notifications routed through SNS → email per the assignment spec.
+# Slack routing via AWS Chatbot is described as a future enhancement in the
+# root README — not provisioned here to keep the module self-contained and
+# reviewable without out-of-band Slack OAuth setup.
 
 # ---------------------------------------------------------------------------
 # Log Groups
@@ -53,7 +57,7 @@ resource "aws_cloudwatch_metric_alarm" "glue_job_failure" {
   evaluation_periods  = 1
   metric_name         = "GlueJobFailureCount"
   namespace           = "Remarcable/Glue"
-  period              = 300   # 5 minutes
+  period              = 300 # 5 minutes
   statistic           = "Sum"
   threshold           = 1
   treat_missing_data  = "notBreaching"
@@ -63,7 +67,9 @@ resource "aws_cloudwatch_metric_alarm" "glue_job_failure" {
 }
 
 # ---------------------------------------------------------------------------
-# Additional alarm: Glue job duration > 60 minutes (runaway job detection)
+# Additional alarm: Glue job duration > 60 minutes (runaway job detection).
+# The failure-pattern alarm above only catches crashes; long-running jobs that
+# never error out would otherwise go unnoticed.
 # ---------------------------------------------------------------------------
 resource "aws_cloudwatch_metric_alarm" "glue_job_duration" {
   alarm_name          = "${var.name_prefix}-glue-job-duration"
@@ -72,9 +78,9 @@ resource "aws_cloudwatch_metric_alarm" "glue_job_duration" {
   evaluation_periods  = 1
   metric_name         = "glue.driver.aggregate.elapsedTime"
   namespace           = "Glue"
-  period              = 3600   # 1 hour
+  period              = 3600    # 1 hour
   statistic           = "Maximum"
-  threshold           = 3600000   # 60 min in ms
+  threshold           = 3600000 # 60 min in ms
   treat_missing_data  = "notBreaching"
 
   dimensions = {
@@ -83,74 +89,4 @@ resource "aws_cloudwatch_metric_alarm" "glue_job_duration" {
   }
 
   alarm_actions = [aws_sns_topic.alerts.arn]
-}
-
-# ---------------------------------------------------------------------------
-# Slack integration via AWS Chatbot
-#
-# PREREQUISITE (one-time manual step):
-#   1. Open the AWS Console → AWS Chatbot → Configure a Slack client
-#   2. Authorize the OAuth flow for your Slack workspace
-#   3. Copy the Workspace ID shown after authorization into slack_workspace_id
-#
-# After that, everything below is fully managed by Terraform.
-# The existing SNS topic is reused — no duplicate alarm wiring needed.
-# ---------------------------------------------------------------------------
-
-# IAM role that Chatbot assumes to publish to SNS and read CloudWatch
-data "aws_iam_policy_document" "chatbot_assume" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["chatbot.amazonaws.com"]
-    }
-  }
-}
-
-resource "aws_iam_role" "chatbot" {
-  name               = "${var.name_prefix}-chatbot-role"
-  assume_role_policy = data.aws_iam_policy_document.chatbot_assume.json
-}
-
-data "aws_iam_policy_document" "chatbot_policy" {
-  statement {
-    sid     = "CloudWatchRead"
-    actions = [
-      "cloudwatch:Describe*",
-      "cloudwatch:Get*",
-      "cloudwatch:List*",
-    ]
-    resources = ["*"]
-  }
-  statement {
-    sid     = "SNSPublish"
-    actions = ["sns:Publish"]
-    resources = [aws_sns_topic.alerts.arn]
-  }
-}
-
-resource "aws_iam_role_policy" "chatbot" {
-  name   = "${var.name_prefix}-chatbot-policy"
-  role   = aws_iam_role.chatbot.id
-  policy = data.aws_iam_policy_document.chatbot_policy.json
-}
-
-# Chatbot Slack channel configuration (requires awscc provider)
-resource "awscc_chatbot_slack_channel_configuration" "alerts" {
-  configuration_name = "${var.name_prefix}-slack-alerts"
-  iam_role_arn       = aws_iam_role.chatbot.arn
-
-  # Populate these via terraform.tfvars — never hardcode workspace/channel IDs
-  slack_workspace_id = var.slack_workspace_id
-  slack_channel_id   = var.slack_channel_id
-
-  # Reuse the existing SNS topic — alarms already publish here
-  sns_topic_arns = [aws_sns_topic.alerts.arn]
-
-  # NONE suppresses the verbose AWS formatting; INFO adds account/region context
-  logging_level = "INFO"
-
-  # Guardrails: restrict Chatbot from running any AWS CLI commands from Slack
-  guardrail_policies = ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
 }

@@ -83,6 +83,4 @@ module "cloudwatch" {
   glue_job_name      = module.glue.glue_job_name
   alarm_email        = var.alarm_email
   log_retention_days = var.log_retention_days
-  slack_workspace_id = var.slack_workspace_id
-  slack_channel_id   = var.slack_channel_id
 }

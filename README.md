@@ -4,6 +4,30 @@ A production-representative data pipeline covering medallion data modeling, AWS 
 
 ---
 
+## Scope & Approach
+
+The assignment specified ~4–5 hours across five parts. The repository implements
+**100% of the required deliverables** plus a focused set of production-minded
+additions that I would ship in a real environment. The split is documented
+explicitly so the required work can be evaluated separately from the
+extensions:
+
+- **Required deliverables** — see Parts 1–5 sections below. Each section
+  starts with the spec checklist.
+- **Production extensions** — listed at the end of each Part (e.g. incremental
+  materialization for `fct_orders`, S3 lifecycle rules, runaway-job alarm,
+  CI workflows). Rationale for every addition is in
+  [`ASSUMPTIONS.md`](ASSUMPTIONS.md).
+- **Out of scope** — VPC provisioning, real-time CDC, dbt orchestration
+  layer. See `ASSUMPTIONS.md` § 6.
+
+All non-obvious decisions (MRR proxy, reference date, retention cohort
+definition, SCD type, alerting design) are documented in
+[`ASSUMPTIONS.md`](ASSUMPTIONS.md). Reviewers should read that file alongside
+this one.
+
+---
+
 ## Pipeline Architecture
 
 ![ETL Pipeline Diagram](assets/pipeline_diagram.svg)
@@ -14,6 +38,8 @@ A production-representative data pipeline covering medallion data modeling, AWS 
 
 ```
 remarcable_project/
+├── README.md                    # overview, scope, how to run
+├── ASSUMPTIONS.md               # every non-obvious decision, by part
 ├── dbt_project.yml              # dbt configuration
 ├── models/
 │   ├── sources.yml              # raw source declarations + freshness thresholds
@@ -156,7 +182,7 @@ terraform apply tfplan
 | `glue`       | Glue Data Catalog (2 databases), crawler, ETL job, scheduled trigger |
 | `redshift`   | Serverless namespace + workgroup, `require_ssl=true`, activity logging |
 | `athena`     | Workgroup with encrypted results, 10 GB scan cap, 2 saved named queries |
-| `cloudwatch` | 2 log groups, SNS topic, failure alarm, runaway-job duration alarm |
+| `cloudwatch` | 2 log groups, SNS topic + email subscription, Glue failure alarm, runaway-duration alarm |
 
 ---
 
@@ -225,8 +251,42 @@ Terraform resources: `bonus/sagemaker_terraform.tf` provisions the S3 artifact b
 
 ## Assumptions & Trade-offs
 
-1. **MRR definition**: Procurement spend is used as MRR proxy. True SaaS MRR would require a subscriptions table mapping contractors to recurring contract values.
-2. **Cancelled orders**: Excluded from all revenue and retention metrics. They are preserved in the fact table with `is_cancelled=true` for cancellation-rate analysis.
-3. **SCD Type 1 for contractors**: Plan upgrades overwrite the current row. Historical plan attribution requires SCD Type 2 (add `valid_from`, `valid_to`, `is_current`).
-4. **Redshift Serverless credentials**: Admin password is managed via `TF_VAR_*` env var. In production, use AWS Secrets Manager with `aws_secretsmanager_secret` and rotation enabled.
-5. **Terraform not applied**: Code is written and formatted but not applied to a live AWS account per the submission instructions.
+Every non-obvious design decision is documented in **[`ASSUMPTIONS.md`](ASSUMPTIONS.md)**, organized by part. Highlights:
+
+- **MRR** is a procurement-spend proxy — the dataset has no subscription
+  table. The query shape would not change in a real SaaS environment, only
+  the revenue source.
+- **Reference date** is anchored to `2024-06-30` (end of dataset) so the
+  "last 30 days" queries return non-empty results when run against the
+  provided sample data.
+- **Cancelled orders** are excluded from revenue and retention metrics,
+  preserved in the fact table for cancellation-rate analysis.
+- **`fct_orders` is incremental** on `order_id` — full refresh on every dbt
+  run does not scale.
+- **Terraform not applied** to a live account per the submission
+  instructions; CI runs `terraform validate` and `terraform plan` against
+  placeholder networking values.
+
+---
+
+## Future Enhancements (Not Implemented)
+
+Production-grade improvements that would be the next iteration but were kept
+out of this submission to stay within the time envelope:
+
+- **Slack alerting via AWS Chatbot** — route the SNS alerts topic to a
+  `#data-alerts` channel using `aws_chatbot_slack_channel_configuration`.
+  Requires a one-time manual OAuth flow in the AWS Console for Slack
+  workspace authorization, which is why it is documented here rather than
+  provisioned. The SNS topic is already the integration point — adding
+  Slack is a single subscription resource.
+- **Secrets Manager for Redshift credentials** — replace the
+  `TF_VAR_redshift_admin_password` flow with `aws_secretsmanager_secret`
+  + rotation.
+- **Airflow / Step Functions orchestration** — current setup uses Glue
+  scheduled triggers. A workflow engine becomes valuable once there are
+  cross-system dependencies (e.g. wait for an external SFTP drop before
+  triggering the crawler).
+- **PII / column-level access control** — Lake Formation tag-based access
+  control on the staging Glue databases.
+
