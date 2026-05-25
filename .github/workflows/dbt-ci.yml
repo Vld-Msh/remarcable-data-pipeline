@@ -69,12 +69,3 @@ jobs:
           path: target/
           retention-days: 7
 
-      # SQL linting via sqlfluff
-      - name: sqlfluff lint
-        run: |
-          sqlfluff lint models/ \
-            --dialect duckdb \
-            --templater dbt \
-            --exclude-rules ST06,ST07 \
-            --warn-unused-ignores
-        continue-on-error: true   # lint warnings don't block the build
