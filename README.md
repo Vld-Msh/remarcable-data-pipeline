@@ -30,7 +30,7 @@ this one.
 
 ## Pipeline Architecture
 
-
+![ETL Pipeline Diagram](assets/pipeline_diagram.svg)
 
 ---
 
