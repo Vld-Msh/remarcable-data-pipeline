@@ -272,7 +272,7 @@ Every non-obvious design decision is documented in **[`ASSUMPTIONS.md`](ASSUMPTI
 ## Future Enhancements (Not Implemented)
 
 Production-grade improvements that would be the next iteration but were kept
-out of this submission to stay within the time envelope:
+out of this submission to stay within the time frame:
 
 - **Slack alerting via AWS Chatbot** - route the SNS alerts topic to a
   `#data-alerts` channel using `aws_chatbot_slack_channel_configuration`.
